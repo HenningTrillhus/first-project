@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div id="menuBoxTop">
+        <p>Meny</p>
+    </div>
+
+
+    <div id="headerDiv">
+            <h1 id="header1">Hva har vi i kjøleskapet?</h1>
+        </div>
+    <div id="inputBox">
+        
+        <div>
+            <input id="ingredient" type="text" pattern="[A-Za-z ]+" name="ingredient" placeholder="Enter ingredient">
+            <div class="unit-controls">
+                <label for="massurmentChoice">
+                    <select name="massurment" id="massurmentChoice">
+                        <option value="stk">Stk</option>
+                        <option value="Gram">Gram</option>
+                        <option value="Kilogram">Kilogram</option>
+                        <option value="Liter">Liter</option>
+                        <option value="Milliliter">Milliliter</option>
+                    </select>
+                </label>
+                <input id="quantity" type="number" name="quantity" placeholder="Enter quantity">
+            </div>
+            <button id="addIngridientButton">
+                Legg til ingredients
+            </button>
+        </div>
+    </div>
+
+
+        <script>
+            const ingredientsNames = [];
+            // Attach button click to client-side function
+            document.getElementById('addIngridientButton').addEventListener('click', addIngridient);
+
+            // Load initial ingredients from server and render them
+            (async function init() {
+                try {
+                    const res = await fetch('/api/ingredients');
+                    const json = await res.json();
+                    if (json.ingredients && Array.isArray(json.ingredients)) {
+                        renderIngredients(json.ingredients);
+                        json.ingredients.forEach(i => ingredientsNames.push(i.name));
+                    }
+                } catch (e) {
+                    console.warn('Could not load initial ingredients', e);
+                }
+            })();
+
+            async function addIngridient() {
+                // Get values from input fields, remove whitespace
+                const name = document.getElementById('ingredient').value.trim();
+                const qtyStr = document.getElementById('quantity').value.trim();
+                const massurment = document.getElementById('massurmentChoice').value;
+
+                //Checks for empty fields
+                if (name === "" || qtyStr === "") { alert('Please enter name and quantity'); return; }
+
+                // Convert quantity to integer
+                const qty = parseInt(qtyStr, 10);
+                if (Number.isNaN(qty)) {return}
+
+                // Send POST request to backend
+                const res = await fetch('/api/ingredients', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, quantity: qty , massurment })
+                });
+                const json = await res.json();
+
+                // If server returns the full list, re-render it and update names index
+                if (json.ingredients && Array.isArray(json.ingredients)) {
+                    renderIngredients(json.ingredients);
+                    ingredientsNames.length = 0;
+                    json.ingredients.forEach(i => ingredientsNames.push(i.name));
+                    return;
+                }
+
+                // Fallback for older response shape (single ingredient)
+                if (ingredientsNames.includes(name)) {
+                    // Update quantity locally if needed
+                    json.ingredient.quantity += qty;
+                    printIngredient(json.ingredient);
+                    console.log(json.ingredient)
+                    return;
+                } else {
+                    // Add ingredient name to list of existing ingredients if not existing already
+                    ingredientsNames.push(name);
+                }
+
+                try {
+                    printIngredient(json.ingredient);
+                } catch (e) {
+                    alert('Failed to add ingredient');
+                }
+            }
+
+            // Function to render the full list of ingredients
+            function renderIngredients(ingredients) {
+                const ul = document.getElementById('ingredientsUl');
+                // Clear existing list
+                ul.innerHTML = '';
+                // Add each ingredient as a list item
+                ingredients.forEach(ingredient => {
+                    const li = document.createElement('li');
+                    li.className = 'ingredient-item';
+
+                    const nameSpan = document.createElement('span');
+                    nameSpan.className = 'ingredient-name';
+                    nameSpan.textContent = ingredient.name;
+
+                    const controls = document.createElement('div');
+                    controls.className = 'ingredient-controls';
+
+                    const qtySpan = document.createElement('span');
+                    qtySpan.className = 'ingredient-qty';
+                    qtySpan.textContent = `${ingredient.quantity} ${ingredient.massurment}`;
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.type = 'button';
+                    deleteBtn.className = 'delete-btn';
+                    deleteBtn.setAttribute('aria-label', `Delete ${ingredient.name}`);
+                    deleteBtn.innerHTML = `
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                            <path d="M10 11v6" />
+                            <path d="M14 11v6" />
+                        </svg>`;
+
+                    // Click handler to request deletion
+                    deleteBtn.addEventListener('click', () => handleDeleteIngredient(ingredient, li, deleteBtn));
+
+                    controls.appendChild(qtySpan);
+                    controls.appendChild(deleteBtn);
+
+                    li.appendChild(nameSpan);
+                    li.appendChild(controls);
+
+                    ul.appendChild(li);
+                });
+            }
+
+            /*function printIngredient(ingredient) {
+                const li = document.createElement('li')
+                li.textContent = `${ingredient.name}, ${ingredient.quantity} ${ingredient.massurment}`;
+                document.getElementById('ingredientsUl').appendChild(li);
+            }*/
+
+            document.getElementById("ingredient").addEventListener("input", function () {
+                this.value = this.value.replace(/[^\p{L} ]/gu, "");
+            });
+        </script>
+
+
+        <div id="ingredientsList">
+            <h2>
+                <!-- inline SVG icon (ingredients/list) for the badge; uses currentColor so it inherits the white text color -->
+                <svg class="h2-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M4 6h16M4 12h10M4 18h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+                </svg>
+                ingredientser:
+            </h2>
+            <ul id="ingredientsUl">
+                
+            </ul>
+
+        </div>
+      
+</body>
+</html>

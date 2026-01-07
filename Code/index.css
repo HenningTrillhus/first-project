@@ -1,0 +1,366 @@
+/* Make menu fixed to the top and ensure page touches edges */
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    padding-top: 10vh; /* push page content below the fixed menu */
+}
+
+#menuBoxTop{
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 10vh; /* 15% of the viewport height */
+    background-color: black;
+    width: 100%;
+    box-sizing: border-box;
+    z-index: 1000;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Input and header styling - use flexible layout so inputs align with header */
+#ingredient{
+    color: #222;
+    font-size: 16px;
+}
+
+#headerDiv{
+    position: fixed;
+    top: 10vh;
+    left: 0;
+    right: 0;
+    height: 8vh;
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+    color: #222;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    z-index: 900;
+}
+
+#headerDiv h1 {
+    margin: 0;
+    padding: 0.25rem 1rem;
+    font-size: calc(1.25rem + 0.6vw);
+    color: #0b2545;
+}
+
+#inputBox{
+    position: fixed;
+    top: calc(10vh + 8vh);
+    left: 0;
+    right: 0;
+    height: 7vh;
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    z-index: 900;
+    backdrop-filter: blur(4px);
+}
+
+/* Ensure the visible control container fills the fixed inputBox height */
+#inputBox > div{
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 0.4rem;
+    border-radius: 12px;
+    background: rgba(173,216,230,0.15);
+    box-shadow: 0 6px 18px rgba(14,30,37,0.06);
+    max-width: 920px;
+    width: calc(100% - 2rem);
+    height: 100%;
+    align-items: center;
+}
+
+/* Container that holds the input controls */
+#inputBox > div{
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 0.6rem;
+    border-radius: 12px;
+    background: rgba(173,216,230,0.15);
+    box-shadow: 0 6px 18px rgba(14,30,37,0.06);
+    max-width: 920px;
+    width: calc(100% - 2rem);
+}
+
+/* Inputs / select / button shared styles */
+#ingredient, #quantity, #massurmentChoice{
+    padding: 0.55rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #d0d7de;
+    background: #fff;
+    font-size: 1rem;
+    height: 40px;
+    box-sizing: border-box;
+}
+
+#massurmentChoice{
+    height: 40px;
+}
+
+/* Group the unit selector and quantity on a single row */
+.unit-controls{
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+.unit-controls > *{
+    flex: 0 0 auto;
+}
+
+/* On smaller screens place them side-by-side at 50% each */
+@media (max-width: 600px){
+    .unit-controls > *{ flex: 1 1 50%; width: auto; }
+}
+
+#addIngridientButton{
+    padding: 0.55rem 0.9rem;
+    border-radius: 8px;
+    border: none;
+    background: #007acc;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+    height: 40px;
+    box-shadow: 0 4px 10px rgba(0,122,204,0.12);
+    transition: transform .08s ease, background .12s ease;
+}
+
+#addIngridientButton:hover{
+    background: #005fa3;
+    transform: translateY(-1px);
+}
+
+/* Focus states */
+#ingredient:focus, #quantity:focus, #massurmentChoice:focus, #addIngridientButton:focus{
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0,122,204,0.12);
+}
+
+/* Make the controls responsive on small screens */
+@media (max-width: 600px){
+    /* Make the controls slightly taller on small screens */
+    #headerDiv { height: 12vh; }
+    #inputBox { height: 12vh; top: calc(10vh + 12vh); }
+    /* Position the fixed panel appropriately on small screens */
+    #ingredientsList { top: calc(10vh + 12vh + 12vh + 1rem); bottom: 10vh; }
+
+    #inputBox > div{
+        gap: 0.5rem;
+        padding: 0.5rem;
+    }
+    #ingredient, #quantity, #massurmentChoice, #addIngridientButton{
+        flex: 1 1 100%;
+        width: 100%;
+    }
+}
+
+/* Ingredients list styling */
+#ingredientsList {
+    position: fixed;
+    top: calc(10vh + 8vh + 10vh + 0.5rem);
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 2rem);
+    max-width: 920px;
+    bottom: 10vh; /* 10% of viewport height from bottom */
+    padding: 1rem;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #ffffff, #f6fbff);
+    box-shadow: 0 8px 20px rgba(14,30,37,0.06);
+    border: 1px solid rgba(11,37,69,0.04);
+
+    /* Fixed box that scrolls internally without affecting the page */
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+#ingredientsList h2 {
+    /* badge-like heading that sits inside its own blue box */
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 1rem 0;
+    padding: 0.45rem 0.85rem;
+    font-size: 1rem;
+    color: #ffffff; /* white text for contrast */
+    background: linear-gradient(180deg, #0b66ff 0%, #005ce6 100%);
+    border-radius: 10px;
+    font-weight: 700;
+    box-shadow: 0 6px 18px rgba(11,92,230,0.14);
+    border: 1px solid rgba(255,255,255,0.06);
+    letter-spacing: 0.2px;
+}
+
+/* icon inside the h2 badge */
+#ingredientsList h2 .h2-icon {
+    width: 1.15em;
+    height: 1.15em;
+    flex: 0 0 auto;
+    display: block;
+    color: rgba(255,255,255,0.98);
+    opacity: 0.98;
+}
+
+/* small screens: slightly smaller badge */
+@media (max-width: 420px) {
+    #ingredientsList h2 {
+        font-size: 0.95rem;
+        padding: 0.4rem 0.6rem;
+        border-radius: 8px;
+    }
+    #ingredientsList h2 .h2-icon {
+        width: 1em;
+        height: 1em;
+    }
+}
+
+/* small screens: slightly smaller badge */
+@media (max-width: 420px) {
+    #ingredientsList h2 {
+        font-size: 0.95rem;
+        padding: 0.4rem 0.6rem;
+        border-radius: 8px;
+    }
+}
+#ingredientsUl {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+}
+.ingredient-item {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    padding: 0.6rem 0.75rem;
+    border-radius: 10px;
+    background: #fff;
+    border: 1px solid rgba(11,37,69,0.04);
+    transition: transform .12s ease, box-shadow .12s ease;
+}
+.ingredient-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 18px rgba(11,37,69,0.06);
+}
+.ingredient-name {
+    font-weight: 600;
+    color: #123;
+    text-transform: capitalize;
+    flex: 1 1 auto;
+    min-width: 0; /* allow truncation on small screens */
+}
+.ingredient-controls{ display: inline-flex; gap: 0.5rem; align-items: center; }
+.ingredient-qty {
+    display:inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg,#eaf3ff,#dbeeff);
+    color: #04396b;
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    min-width: 48px;
+    text-align:center;
+}
+
+.delete-btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:36px;
+    height:36px;
+    padding:0;
+    border-radius:8px;
+    border:none;
+    background: transparent;
+    color: #c44;
+    cursor: pointer;
+}
+.delete-btn svg{ width:18px; height:18px; }
+.delete-btn:hover{ background: rgba(0,0,0,0.04); }
+.delete-btn:focus{ outline: none; box-shadow: 0 0 0 3px rgba(196,68,68,0.12); }
+@media (max-width: 420px){
+    .ingredient-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.4rem;
+    }
+    .ingredient-qty {
+        align-self: flex-end;
+    }
+    .ingredient-controls { align-self: flex-end; }
+}
+
+/* iPhone / very small screens adjustments (safe-area aware) */
+:root {
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Slightly shrink fixed header + respect notch for iPhone sizes */
+@media (max-width: 420px) {
+    #menuBoxTop{
+        height: calc(9vh + var(--safe-top));
+        padding-top: var(--safe-top);
+    }
+    body { padding-top: calc(9vh + var(--safe-top)); }
+
+    #headerDiv{
+        top: calc(9vh + var(--safe-top));
+        height: 8vh;
+    }
+
+    #inputBox{
+        top: calc(9vh + var(--safe-top) + 8vh);
+        height: 11vh;
+    }
+
+    #inputBox > div{ padding: 0.4rem; gap: 0.4rem; }
+
+    #ingredient, #quantity, #massurmentChoice, #addIngridientButton{
+        height: 44px;
+        font-size: 0.95rem;
+    }
+
+    #ingredientsList{
+        top: calc(9vh + var(--safe-top) + 8vh + 20vh + 0.5rem);
+        bottom: calc(var(--safe-bottom) + 6vh);
+        padding: 0.8rem;
+    }
+
+    #ingredientsList h2{ font-size: 1rem; }
+    .ingredient-name{ font-size: 0.95rem; }
+    .ingredient-qty{ font-size: 0.85rem; min-width: 40px; }
+}
+
+/* Extra small phones (e.g., SE) */
+@media (max-width: 360px) {
+    #menuBoxTop{ height: calc(11vh + var(--safe-top)); }
+    body { padding-top: calc(11vh + var(--safe-top)); }
+    #headerDiv{ top: calc(11vh + var(--safe-top)); height: 10vh; }
+    #inputBox{ top: calc(11vh + var(--safe-top) + 10vh); height: 12vh; }
+    #inputBox > div{ padding: 0.35rem; gap: 0.35rem; }
+    #ingredient, #quantity, #massurmentChoice, #addIngridientButton{ height: 36px; font-size: 0.95rem; }
+    #ingredientsList{ top: calc(11vh + var(--safe-top) + 10vh + 8vh + 0.5rem); bottom: calc(var(--safe-bottom) + 5vh); }
+    .ingredient-item{ padding: 0.5rem; border-radius: 8px; }
+}
+
