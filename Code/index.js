@@ -77,3 +77,38 @@ app.post('/api/ingredients', (req, res) => {
 app.get('/api/ingredients', (req, res) => {
   res.json({ ok: true, ingredients });
 });
+
+// Endpoint to delete a single ingredient by name (expects JSON { name })
+app.delete('/api/ingredients', (req, res) => {
+  const name = req.body && req.body.name ? String(req.body.name).trim() : '';
+  if (!name) {
+    return res.status(400).json({ ok: false, error: 'Name is required' });
+  }
+  const idx = ingredients.findIndex(ing => ing.name === name);
+  if (idx !== -1) {
+    ingredients.splice(idx, 1);
+    console.log('deleted ingredient', name);
+  } else {
+    console.log('ingredient not found', name);
+  }
+  res.json({ ok: true, ingredients });
+});
+
+// Endpoint to replace entire ingredients list (expects JSON { ingredients: [...] })
+app.put('/api/ingredients', (req, res) => {
+  const newIngredients = Array.isArray(req.body.ingredients) ? req.body.ingredients.map(i => ({
+    name: String(i.name || '').trim(),
+    quantity: parseInt(i.quantity, 10) || 0,
+    massurment: i.massurment || 'stk'
+  })).filter(i => i.name && i.quantity > 0) : null;
+
+  if (newIngredients === null) {
+    return res.status(400).json({ ok: false, error: 'Invalid ingredients array' });
+  }
+
+  // Replace the in-memory list
+  ingredients.length = 0;
+  ingredients.push(...newIngredients);
+  console.log('ingredients replaced with', ingredients);
+  res.json({ ok: true, ingredients });
+});

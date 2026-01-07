@@ -39,6 +39,10 @@
 
 
         <script>
+            function capitalizeFirstLetter(str) {
+                return str.charAt(0).toUpperCase() + str.slice(1);
+            }
+
             const ingredientsNames = [];
             // Attach button click to client-side function
             document.getElementById('addIngridientButton').addEventListener('click', addIngridient);
@@ -59,9 +63,11 @@
 
             async function addIngridient() {
                 // Get values from input fields, remove whitespace
-                const name = document.getElementById('ingredient').value.trim();
+                let name = document.getElementById('ingredient').value.trim();
                 const qtyStr = document.getElementById('quantity').value.trim();
                 const massurment = document.getElementById('massurmentChoice').value;
+                // Capitalize first letter of name
+                name = capitalizeFirstLetter(name);
 
                 //Checks for empty fields
                 if (name === "" || qtyStr === "") { alert('Please enter name and quantity'); return; }
@@ -139,7 +145,7 @@
                         </svg>`;
 
                     // Click handler to request deletion
-                    deleteBtn.addEventListener('click', () => handleDeleteIngredient(ingredient, li, deleteBtn));
+                    deleteBtn.addEventListener('click', () => handleDeleteIngredient(ingredient.name,ingredients));
 
                     controls.appendChild(qtySpan);
                     controls.appendChild(deleteBtn);
@@ -149,6 +155,47 @@
 
                     ul.appendChild(li);
                 });
+            }
+            async function handleDeleteIngredient(name, ingredients){
+                try {
+                    const res = await fetch('/api/ingredients', {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name })
+                    });
+                    const json = await res.json();
+                    if (json.ingredients && Array.isArray(json.ingredients)) {
+                        renderIngredients(json.ingredients);
+                        return;
+                    }
+                    // Fallback: remove locally if server didn't return list
+                    ingredients.forEach(ingredient => {
+                        if (name === ingredient.name){
+                            ingredients.splice(ingredients.indexOf(ingredient), 1);
+                            renderIngredients(ingredients);
+                            console.log("delete", name)
+                        }
+                    })
+                } catch (err) {
+                    console.error('Failed to delete ingredient on server', err);
+                }
+            }
+
+            // Helper to replace the full ingredients list on the server
+            async function updateIngredientsOnServer(ingredients) {
+                try {
+                    const res = await fetch('/api/ingredients', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ingredients })
+                    });
+                    const json = await res.json();
+                    if (json.ingredients && Array.isArray(json.ingredients)) {
+                        renderIngredients(json.ingredients);
+                    }
+                } catch (err) {
+                    console.error('Failed to update ingredients on server', err);
+                }
             }
 
             /*function printIngredient(ingredient) {
@@ -160,6 +207,7 @@
             document.getElementById("ingredient").addEventListener("input", function () {
                 this.value = this.value.replace(/[^\p{L} ]/gu, "");
             });
+            
         </script>
 
 
