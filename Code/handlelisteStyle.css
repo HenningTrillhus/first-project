@@ -32,3 +32,16 @@
 /* Style delete button SVG and make it clickable */
 .delete-btn { background: transparent; border: none; cursor: pointer; padding: 4px; display: inline-flex; align-items: center; justify-content: center; }
 .delete-btn svg { width: 20px; height: 20px; display: block; stroke: currentColor; }
+    
+/* Category grouping header */
+.category-header { 
+    font-weight: 700; 
+    font-size: 0.95rem; 
+    padding: 10px 0 6px; 
+    margin-top: 8px;
+    border-top: 1px solid rgba(0,0,0,0.06);
+    color: #333;
+}
+
+/* Small extra spacing for groups so items are visually separated */
+.category-header + .grocerie-item { padding-top: 6px; }

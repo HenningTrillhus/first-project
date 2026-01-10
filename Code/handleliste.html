@@ -140,8 +140,29 @@
             if (!ul) return; // nothing to render into
             // Clear existing list
             ul.innerHTML = '';
-            // Add each grocerie as a list item
-            grocerieList.forEach(item => {
+            // Sort by category (then by name) so items are grouped by category
+            const sorted = grocerieList.slice().sort((a, b) => {
+                const ca = (a.category || '').toLowerCase();
+                const cb = (b.category || '').toLowerCase();
+                if (ca < cb) return -1;
+                if (ca > cb) return 1;
+                const na = (a.name || '').toLowerCase();
+                const nb = (b.name || '').toLowerCase();
+                if (na < nb) return -1;
+                if (na > nb) return 1;
+                return 0;
+            });
+            // Add each grocerie as a list item, grouping by category with headers
+            let currentCategory = null;
+            sorted.forEach(item => {
+                const categoryName = item.category || 'Annet';
+                if (categoryName !== currentCategory) {
+                    currentCategory = categoryName;
+                    const catLi = document.createElement('li');
+                    catLi.className = 'category-header';
+                    catLi.textContent = categoryName;
+                    ul.appendChild(catLi);
+                }
                 const li = document.createElement('li');
                 li.className = 'grocerie-item';
 

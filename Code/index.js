@@ -127,12 +127,11 @@ app.post('/api/grocerieList', (req, res) => {
     // Handle massurment, defaulting to an "Stk" string if not provided
     const massurment = req.body.massurment || 'stk';
 
-    const completed = req.body.completed || false;
-
-    const categories = req.body.categories || 'Annet';
+    const completed = !!req.body.completed;
+    const category = String(req.body.category || 'Annet').trim();
 
     // Create ingredient object to store in the list of ingredients
-    const groscerie = { name, quantity, massurment, completed, categories };
+    const groscerie = { name, quantity, massurment, completed, category };
 
     // Check if ingredient with the same name already exists in the list
     if (grocerieList.some(ing => ing.name === groscerie.name)) {
@@ -142,6 +141,8 @@ app.post('/api/grocerieList', (req, res) => {
             // Update quantity if names match
             if (ing.name === groscerie.name) {
                 ing.quantity += groscerie.quantity;
+                // Update category if provided
+                if (category) ing.category = category;
                 // If quantity becomes zero or negative, remove the ingredient from the list
                 if (ing.quantity <= 0) {
                     const idx = grocerieList.indexOf(ing);
