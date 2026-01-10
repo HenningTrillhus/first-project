@@ -9,11 +9,14 @@
 <body>
     <div id="menuBoxTop">
         <p>Meny</p>
+        <button onclick="location.href='handleliste.html'">
+            Gå til neste side
+        </button>
     </div>
 
 
     <div id="headerDiv">
-            <h1 id="header1">Hva har vi i kjøleskapet?</h1>
+            <h1 id="header1">Hva har vi i kjøleskapet og hjem?</h1>
         </div>
     <div id="inputBox">
         
@@ -29,7 +32,7 @@
                         <option value="Milliliter">Milliliter</option>
                     </select>
                 </label>
-                <input id="quantity" type="number" name="quantity" placeholder="Enter quantity">
+                <input id="quantity" type="text" inputmode="decimal" step="any" name="quantity" placeholder="Enter quantity (e.g., 1,5)">
             </div>
             <button id="addIngridientButton">
                 Legg til ingredients
@@ -72,9 +75,9 @@
                 //Checks for empty fields
                 if (name === "" || qtyStr === "") { alert('Please enter name and quantity'); return; }
 
-                // Convert quantity to integer
-                const qty = parseInt(qtyStr, 10);
-                if (Number.isNaN(qty)) {return}
+                // Normalize comma to dot so parseFloat works with both '1.5' and '1,5', then convert to float
+                const qty = parseFloat(qtyStr.replace(',', '.'));
+                if (Number.isNaN(qty) || qty <= 0) { alert('Please enter a valid quantity greater than 0'); return; }
 
                 // Send POST request to backend
                 const res = await fetch('/api/ingredients', {
@@ -154,6 +157,10 @@
                     li.appendChild(controls);
 
                     ul.appendChild(li);
+
+                    document.getElementById('ingredient').value = '';
+                    document.getElementById('quantity').value = '';
+                    document.getElementById('massurmentChoice').value = 'stk';
                 });
             }
             async function handleDeleteIngredient(name, ingredients){
@@ -198,14 +205,20 @@
                 }
             }
 
-            /*function printIngredient(ingredient) {
-                const li = document.createElement('li')
-                li.textContent = `${ingredient.name}, ${ingredient.quantity} ${ingredient.massurment}`;
-                document.getElementById('ingredientsUl').appendChild(li);
-            }*/
-
             document.getElementById("ingredient").addEventListener("input", function () {
                 this.value = this.value.replace(/[^\p{L} ]/gu, "");
+            });
+            
+            document.getElementById("quantity").addEventListener("input", function () {
+                // Allow digits and one decimal separator (comma or dot). Keep the first separator entered and remove any extra separators.
+                let val = this.value.replace(/[^0-9.,]/g, "");
+                const firstSepMatch = val.match(/[.,]/);
+                if (firstSepMatch) {
+                    const sep = firstSepMatch[0];
+                    const parts = val.split(/[.,]/);
+                    val = parts.shift() + sep + parts.join('');
+                }
+                this.value = val;
             });
             
         </script>

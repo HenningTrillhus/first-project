@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        /* Toggle switch styles */
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; margin-right: 8px; vertical-align: middle; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .18s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: #fff; transition: .18s; border-radius: 50%; }
+        .switch input:checked + .slider { background-color: #4caf50; }
+        .switch input:checked + .slider:before { transform: translateX(20px); }
+        .switch input:focus + .slider { box-shadow: 0 0 1px #4caf50; }
+
+        /* Visual for completed item */
+        .grocerie-item.completed .grocerie-name { text-decoration: line-through; opacity: 0.6; }
+
+        /* Small layout niceties */
+        .grocerie-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
+        .grocerie-controls { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+    </style>
+</head> 
+<body>
+    <h1>handleliste her !!!!</h1>
+    <button onclick="location.href='index.html'">
+        Gå til kjøleskap
+    </button>
+
+    <div>
+            <input id="grocerie" type="text" pattern="[A-Za-z ]+" name="grocerie" placeholder="Enter grocerie">
+            <div class="unit-controls">
+                <label for="massurmentChoiceForGroceries">
+                    <select name="massurment" id="massurmentChoiceForGroceries">
+                        <option value="stk">Stk</option>
+                        <option value="Gram">Gram</option>
+                        <option value="Kilogram">Kilogram</option>
+                        <option value="Liter">Liter</option>
+                        <option value="Milliliter">Milliliter</option>
+                    </select>
+                </label>
+                <input id="quantity" type="text" inputmode="decimal" step="any" name="quantity" placeholder="Enter quantity (e.g., 1,5)">
+
+                <label for="categoryChoiceForGroceries">
+                    <select name="category" id="categoryChoiceForGroceries">
+                        <option value="Frukt og grønt">Annet</option>
+                        <option value="Frukt og grønt">Frukt og grønt</option>
+                        <option value="Kjøtt og fisk">Kjøtt og fisk</option>
+                        <option value="Dagligvarer">Dagligvarer</option>
+                        <option value="Drikke">Drikke</option>
+                        <option value="Bakevarer">Bakevarer</option>
+                        <option value="Frostvarer">Frostvarer</option>
+                        <option value="Husholdning">Husholdning</option>
+                        <option value="HelseVellveret">Helse & vellvære</option>
+                        <option value="Kos">Kos</option>
+                    </select>
+                </label>
+            </div>
+            <button id="addGroceriesButton">
+                Legg til grocerie
+            </button>
+        </div>
+
+    <script> 
+        function capitalizeFirstLetter(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        const grocerieListItemsNames = [];
+
+        document.getElementById('addGroceriesButton').addEventListener('click', addGroceris);
+
+        document.getElementById("quantity").addEventListener("input", function () {
+            // Allow digits and one decimal separator (comma or dot). Keep the first separator entered and remove any extra separators.
+            let val = this.value.replace(/[^0-9.,]/g, "");
+            const firstSepMatch = val.match(/[.,]/);
+            if (firstSepMatch) {
+                const sep = firstSepMatch[0];
+                const parts = val.split(/[.,]/);
+                val = parts.shift() + sep + parts.join('');
+            }
+            this.value = val;
+        });
+
+        (async function init() {
+            try {
+                const res = await fetch('/api/grocerieList');
+                const json = await res.json();
+                if (json.grocerieList && Array.isArray(json.grocerieList)) {
+                    renderGroceries(json.grocerieList);
+                    json.grocerieList.forEach(i => grocerieListItemsNames.push(i.name));
+                }
+                console.log('Initial ingredients loaded:', json.grocerieList);
+            } catch (e) {
+                console.warn('Could not load initial ingredients', e);
+            }
+        })();
+
+        async function addGroceris() {
+            // Get values from input fields, remove whitespace
+            let name = document.getElementById('grocerie').value.trim();
+            const qtyStr = document.getElementById('quantity').value.trim();
+            const massurment = document.getElementById('massurmentChoiceForGroceries').value;
+            const completed = false;
+            // Capitalize first letter of name
+            name = capitalizeFirstLetter(name);
+
+            //Checks for empty fields
+            if (name === "" || qtyStr === "") { alert('Please enter name and quantity'); return; }
+
+            // Normalize comma to dot so parseFloat works with both '1.5' and '1,5', then convert to float
+            const qty = parseFloat(qtyStr.replace(',', '.'));
+            if (Number.isNaN(qty) || qty <= 0) { alert('Please enter a valid quantity greater than 0'); return; }
+
+            // Send POST request to backend
+            const res = await fetch('/api/grocerieList', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, quantity: qty , massurment, completed })
+            });
+            const json = await res.json();
+
+            // If server returns the full list, re-render it and update names index
+            if (json.grocerieList && Array.isArray(json.grocerieList)) {
+                renderGroceries(json.grocerieList);
+                grocerieListItemsNames.length = 0;
+                json.grocerieList.forEach(i => grocerieListItemsNames.push(i.name));
+                return;
+            }
+            // Fallback for older response shape (single ingredient)
+            if (grocerieListItemsNames.includes(name)) {
+                // Update quantity locally if needed
+                json.grocerieList.quantity += qty;
+                //printIngredient(json.groscerie);
+                console.log(json.grocerieList)
+                return;
+            } else {
+                // Add ingredient name to list of existing ingredients if not existing already
+                grocerieListItemsNames.push(name);
+            }
+
+            try {
+                //renderGroceries(json.groscerie);
+            } catch (e) {
+                alert('Failed to add groscerie');
+            }
+            console.log('Penis', json.grocerieList);
+            renderGroceries(json.grocerieList);
+        }
+
+        // Function to render the full groceries list
+        function renderGroceries(grocerieList) {
+            const ul = document.getElementById('groceriesUl');
+            if (!ul) return; // nothing to render into
+            // Clear existing list
+            ul.innerHTML = '';
+            // Add each grocerie as a list item
+            grocerieList.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'grocerie-item';
+
+                // Create accessible toggle switch for completed state
+                const switchLabel = document.createElement('label');
+                switchLabel.className = 'switch';
+                const completedCheckbox = document.createElement('input');
+                completedCheckbox.type = 'checkbox';
+                completedCheckbox.className = 'completed-checkbox';
+                completedCheckbox.checked = !!item.completed;
+                completedCheckbox.setAttribute('aria-label', `Mark ${item.name} completed`);
+                completedCheckbox.addEventListener('change', () => toggleCompleted(item.name, completedCheckbox.checked, grocerieList));
+                const sliderSpan = document.createElement('span');
+                sliderSpan.className = 'slider';
+                switchLabel.appendChild(completedCheckbox);
+                switchLabel.appendChild(sliderSpan);
+
+                // reflect completed visually on the item container
+                if (item.completed) li.classList.add('completed');
+
+                const nameSpan = document.createElement('span');
+                nameSpan.className = 'grocerie-name';
+                nameSpan.textContent = item.name;
+
+                const controls = document.createElement('div');
+                controls.className = 'grocerie-controls';
+
+                // add toggle switch before the name so it appears as the first control
+                li.appendChild(switchLabel);
+
+                const qtySpan = document.createElement('span');
+                qtySpan.className = 'grocerie-qty';
+                qtySpan.textContent = `${item.quantity} ${item.massurment}`;
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.type = 'button';
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.setAttribute('aria-label', `Delete ${item.name}`);
+                deleteBtn.textContent = 'Slett';
+
+                // Click handler to request deletion
+                deleteBtn.addEventListener('click', () => handleDeleteGrocerie(item.name, grocerieList));
+
+                controls.appendChild(qtySpan);
+                controls.appendChild(deleteBtn);
+
+                li.appendChild(nameSpan);
+                li.appendChild(controls);
+
+                ul.appendChild(li);
+
+                // Reset input controls
+                document.getElementById('grocerie').value = '';
+                document.getElementById('quantity').value = '';
+                document.getElementById('massurmentChoiceForGroceries').value = 'stk';
+            });
+        }
+
+        async function handleDeleteGrocerie(name, grocerieList){
+            try {
+                const res = await fetch('/api/grocerieList', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name })
+                });
+                const json = await res.json();
+                if (json.grocerieList && Array.isArray(json.grocerieList)) {
+                    renderGroceries(json.grocerieList);
+                    return;
+                }
+                // Fallback: remove locally if server didn't return list
+                grocerieList.forEach(g => {
+                    if (name === g.name){
+                        grocerieList.splice(grocerieList.indexOf(g), 1);
+                        renderGroceries(grocerieList);
+                        console.log("delete", name)
+                    }
+                })
+            } catch (err) {
+                console.error('Failed to delete grocerie on server', err);
+            }
+        }
+
+        // Toggle completed state for a grocerie and update server
+        async function toggleCompleted(name, completed, grocerieList) {
+            try {
+                const res = await fetch('/api/grocerieList', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, completed })
+                });
+                const json = await res.json();
+                if (json.grocerieList && Array.isArray(json.grocerieList)) {
+                    renderGroceries(json.grocerieList);
+                    return;
+                }
+                // Fallback: update locally and re-render
+                grocerieList.forEach(g => {
+                    if (g.name === name) g.completed = completed;
+                });
+                renderGroceries(grocerieList);
+            } catch (err) {
+                console.error('Failed to update completed state on server', err);
+            }
+        }
+    </script>
+
+    <div id="groceriesList">
+        <h2>Handleliste:</h2>
+        <ul id="groceriesUl"></ul>
+    </div>
+
+</body>
+</html>
