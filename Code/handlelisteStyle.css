@@ -1,3 +1,54 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    background: #f6fbff;
+}
+
+body {
+    padding-top: calc(10vh + 8vh + 9vh);
+}
+
+#menuBoxTop{
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 10vh; /* 15% of the viewport height */
+    background-color: black;
+    width: 100%;
+    box-sizing: border-box;
+    z-index: 1000;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#headerDiv{
+    position: fixed;
+    top: 10vh;
+    left: 0;
+    right: 0;
+    height: 8vh;
+    margin: 0;
+    width: 100%;
+    box-sizing: border-box;
+    color: #222;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    z-index: 950;
+}
+
+#headerDiv h1 {
+    margin: 0;
+    padding: 0.25rem 1rem;
+    font-size: calc(1.25rem + 0.5vw);
+    color: #0b2545;
+}
+
 .delete-btn{
     display:inline-flex;
     align-items:center;
@@ -17,23 +68,195 @@
     display:inline-flex;
     align-items:center;
     justify-content:center;
-    width:36px;
-    height:36px;
+    width:40px;
+    height:40px;
     padding:0;
-    border-radius:8px;
+    border-radius:10px;
     border:none;
-    background: transparent;
+    background: linear-gradient(180deg, #ffffff, #f3f6fb);
     color: #cfcfcf;
     cursor:pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    transition: transform .1s ease, box-shadow .12s ease, color .12s ease;
 }
-.importanceBtn {
-    visibility: hidden;
-}
+
 .importance-toggle .importance-icon { width:20px; height:20px; stroke: currentColor; fill: none; transition: all .14s ease; }
 .importance-toggle.active { color: #f6b93b; }
+.importance-toggle:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-1px); }
 .importance-toggle.active .importance-icon { fill: currentColor; }
 
 /* Importance star button shown for each item */
+
+/* Done Button */
+#doneButton {
+    position: fixed;
+    bottom: 2vh;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 32px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    transition: all 0.3s ease;
+    z-index: 900;
+}
+
+#doneButton:hover {
+    background: linear-gradient(135deg, #218838, #1aa179);
+    box-shadow: 0 6px 16px rgba(40, 167, 69, 0.4);
+    transform: translateX(-50%) translateY(-2px);
+}
+
+#doneButton:active {
+    transform: translateX(-50%) translateY(0);
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+#doneButton svg {
+    flex-shrink: 0;
+}
+
+/* --- AddGrocerieDiv Styling (match index page inputBox) --- */
+#addGrocerieDiv {
+    position: fixed;
+    top: calc(10vh + 8vh);
+    left: 0;
+    right: 0;
+    height: 9vh;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 900;
+    backdrop-filter: blur(6px);
+}
+
+#addGrocerieDiv .add-panel {
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 0.55rem 0.75rem;
+    border-radius: 12px;
+    background: rgba(173,216,230,0.18);
+    box-shadow: 0 6px 18px rgba(14,30,37,0.06);
+    max-width: 960px;
+    width: calc(100% - 2rem);
+    box-sizing: border-box;
+}
+
+#grocerie, #quantity, #massurmentChoiceForGroceries, #categoryChoiceForGroceries {
+    padding: 0.55rem 0.75rem;
+    border-radius: 10px;
+    border: 1px solid #d0d7de;
+    background: #fff;
+    font-size: 1rem;
+    height: 40px;
+    box-sizing: border-box;
+    color: #0b2545;
+}
+
+#grocerie {
+    max-width: 180px;
+    flex: 0 0 auto;
+}
+
+.grocerie-group {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex: 0 0 auto;
+}
+
+#massurmentChoiceForGroceries, #categoryChoiceForGroceries {
+    height: 40px;
+}
+
+#categoryChoiceForGroceries {
+    max-width: 160px;
+}
+
+.unit-controls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: nowrap;
+}
+.unit-controls > * {
+    flex: 0 0 auto;
+}
+
+#quantity {
+    width: clamp(82px, 12vw, 130px);
+    flex: 0 0 auto;
+    text-align: center;
+}
+
+#addGroceriesButton {
+    padding: 0.55rem 0.9rem;
+    border-radius: 10px;
+    border: none;
+    background: #007acc;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    height: 40px;
+    font-size: 1rem;
+    box-shadow: 0 4px 12px rgba(0,122,204,0.14);
+    transition: transform .1s ease, background .12s ease;
+}
+#addGroceriesButton:hover {
+    background: #005fa3;
+    transform: translateY(-1px);
+}
+#addGroceriesButton:active {
+    transform: translateY(0);
+}
+
+#grocerie:focus, #quantity:focus, #massurmentChoiceForGroceries:focus, #categoryChoiceForGroceries:focus, #addGroceriesButton:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0,122,204,0.14);
+}
+
+@media (max-width: 720px) {
+    #addGrocerieDiv { height: 11vh; top: calc(10vh + 4vh); }
+    #addGrocerieDiv .add-panel {
+        gap: 0.5rem;
+        padding: 0.5rem;
+    }
+    #grocerie, #quantity, #massurmentChoiceForGroceries, #categoryChoiceForGroceries, #addGroceriesButton {
+        flex: 1 1 100%;
+        width: 100%;
+    }
+    .grocerie-group {
+        flex: 1 1 100%;
+        width: 100%;
+    }
+    #grocerie {
+        max-width: none;
+        flex: 1 1 auto;
+    }
+    .unit-controls {
+        width: 100%;
+        flex-wrap: nowrap;
+        gap: 0.35rem;
+    }
+    #massurmentChoiceForGroceries { flex: 1 1 38%; min-width: 120px; }
+    #quantity { flex: 0 1 26%; min-width: 92px; }
+    #categoryChoiceForGroceries { flex: 1 1 32%; min-width: 110px; }
+    .importance-toggle { width: 40px; height: 40px; }
+}
 .importance-star {
     display:inline-flex;
     align-items:center;
@@ -125,10 +348,10 @@
 /* Container that scrolls internally and does not disturb page layout */
 #groceriesList {
     position: fixed;
-    top: 25vh; /* placed below the top content area */
+    top: calc(10vh + 8vh + 9vh + 0.75rem); /* below menu + header + add panel */
     left: 50%;
     transform: translateX(-50%);
-    width: calc(100% - 2rem);
+    width: calc(100% - 1rem);
     max-width: 920px;
     bottom: 6vh; /* allow some space above the bottom */
     padding: 1rem;
@@ -158,6 +381,15 @@
     letter-spacing: 0.2px;
 }
 
+#groceriesList h2 .h2-icon {
+    width: 1.15em;
+    height: 1.15em;
+    flex: 0 0 auto;
+    display: block;
+    color: rgba(255,255,255,0.98);
+    opacity: 0.98;
+}
+
 #groceriesUl {
     list-style: none;
     margin: 0;
@@ -173,11 +405,12 @@
 
 /* Responsive adjustments for small screens */
 @media (max-width: 600px) {
-    :root { --safe-bottom: env(safe-area-inset-bottom, 0px); }
+    :root { --safe-bottom: env(safe-area-inset-bottom, 10px); }
     #groceriesList {
-        top: 28vh; /* move list lower so inputs and heading are visible */
+        top: calc(10vh + 8vh + 12vh + 1rem);
         bottom: calc(var(--safe-bottom) + 6vh);
         padding: 0.8rem;
+        width: 90%;
     }
     #groceriesList h2 {
         font-size: 0.95rem;
@@ -189,9 +422,10 @@
 
 @media (max-width: 420px) {
     #groceriesList {
-        top: 25vh; /* on very small screens, ensure the inputs can sit above the list */
+        top: calc(10vh + 8vh + 12vh + 0.5rem);
         padding: 0.6rem;
-        bottom: calc(var(--safe-bottom, 0px) + 6vh);
+        bottom: calc(var(--safe-bottom, 0px) + 10vh);
+        width: 100%;
     }
     #groceriesList h2 { font-size: 0.95rem; }
     .grocerie-name { font-size: 1rem; }

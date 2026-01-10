@@ -7,13 +7,24 @@
     <link rel="stylesheet" href="handlelisteStyle.css">
 </head> 
 <body>
-    <h1>handleliste her !!!!</h1>
-    <button onclick="location.href='index.html'">
-        Gå til kjøleskap
-    </button>
+    <div id="menuBoxTop">
+        <button onclick="location.href='index.html'">
+            Gå til kjøleskap
+        </button>
+    </div>
 
-    <div>
-            <input id="grocerie" type="text" pattern="[A-Za-z ]+" name="grocerie" placeholder="Enter grocerie">
+
+
+    <div id="addGrocerieDiv">
+        <div class="add-panel">
+            <div class="grocerie-group">
+                <input id="grocerie" type="text" pattern="[A-Za-z ]+" name="grocerie" placeholder="Enter grocerie">
+                <button type="button" id="importanceToggle" class="importance-toggle" aria-pressed="false" title="Mark as important" onclick="importenseToggold()">
+                    <svg viewBox="0 0 24 24" class="importance-icon" aria-hidden="true" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                    </svg>
+                </button>
+            </div>
             <div class="unit-controls">
                 <label for="massurmentChoiceForGroceries">
                     <select name="massurment" id="massurmentChoiceForGroceries">
@@ -40,18 +51,12 @@
                         <option value="Kos">Kos</option>
                     </select>
                 </label>
-
-            
-                <button type="button" id="importanceToggle" class="importance-toggle" aria-pressed="false" title="Mark as important" onclick="importenseToggold()">
-                    <svg viewBox="0 0 24 24" class="importance-icon" aria-hidden="true" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-                    </svg>
-                </button>
             </div>
             <button id="addGroceriesButton">
                 Legg til grocerie
             </button>
         </div>
+    </div>
 
     <script> 
         function capitalizeFirstLetter(str) {
@@ -191,6 +196,7 @@
                 json.grocerieList.forEach(i => grocerieListItemsNames.push(i.name));
                 // Reset form importance toggle
                 const importanceToggleBtn = document.getElementById('importanceToggle');
+                active = false;
                 if (importanceToggleBtn) { importanceToggleBtn.classList.remove('active'); importanceToggleBtn.setAttribute('aria-pressed','false'); }
                 return;
             }
@@ -223,10 +229,21 @@
             ul.innerHTML = '';
             // Sort by category (then by name) so items are grouped by category
             const sorted = grocerieList.slice().sort((a, b) => {
+                //1. category (a-z)
                 const ca = (a.category || '').toLowerCase();
                 const cb = (b.category || '').toLowerCase();
+
                 if (ca < cb) return -1;
                 if (ca > cb) return 1;
+
+                //2. importence at the top
+                const ia = a.importance ? 1 : 0;
+                const ib = b.importance ? 1 : 0;
+
+                if (ia !== ib) return ib - ia;
+
+
+                //3. name (a-z)
                 const na = (a.name || '').toLowerCase();
                 const nb = (b.name || '').toLowerCase();
                 if (na < nb) return -1;
@@ -421,9 +438,27 @@
     </script>
 
     <div id="groceriesList">
-        <h2>Handleliste:</h2>
+        <h2>
+            <svg class="h2-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M4 6h16M4 12h10M4 18h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"></path>
+            </svg>
+            Handleliste:
+        </h2>
         <ul id="groceriesUl"></ul>
     </div>
+
+    <button id="doneButton" onclick="finishShopping()">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+        Ferdig
+    </button>
+
+    <script>
+        function finishShopping() {
+            alert('Gratulerer! Du er ferdig med handleturen! 🎉');
+        }
+    </script>
 
 </body>
 </html>
