@@ -129,9 +129,10 @@ app.post('/api/grocerieList', (req, res) => {
 
     const completed = !!req.body.completed;
     const category = String(req.body.category || 'Annet').trim();
+    const importance = req.body.importance;
 
     // Create ingredient object to store in the list of ingredients
-    const groscerie = { name, quantity, massurment, completed, category };
+    const groscerie = { name, quantity, massurment, completed, category, importance };
 
     // Check if ingredient with the same name already exists in the list
     if (grocerieList.some(ing => ing.name === groscerie.name)) {

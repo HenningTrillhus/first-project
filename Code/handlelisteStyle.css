@@ -11,6 +11,46 @@
     color: #c44;
     cursor: pointer;
 }
+
+/* Importance star button (in add form) */
+.importance-toggle {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:36px;
+    height:36px;
+    padding:0;
+    border-radius:8px;
+    border:none;
+    background: transparent;
+    color: #cfcfcf;
+    cursor:pointer;
+}
+.importanceBtn {
+    visibility: hidden;
+}
+.importance-toggle .importance-icon { width:20px; height:20px; stroke: currentColor; fill: none; transition: all .14s ease; }
+.importance-toggle.active { color: #f6b93b; }
+.importance-toggle.active .importance-icon { fill: currentColor; }
+
+/* Importance star button shown for each item */
+.importance-star {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:36px;
+    height:36px;
+    padding:0;
+    border-radius:8px;
+    border:none;
+    background: transparent;
+    color: #f6b93b;
+    cursor:pointer;
+}
+.importance-star svg { width:18px; height:18px; display:block; stroke: currentColor; fill: none; }
+.importance-star[aria-pressed="true"] svg { fill: currentColor; }
+
+
 .delete-btn svg{ width:18px; height:18px; }
 .delete-btn:hover{ background: rgba(0,0,0,0.04); }
 .delete-btn:focus{ outline: none; box-shadow: 0 0 0 3px rgba(196,68,68,0.12); }
