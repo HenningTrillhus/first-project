@@ -4,23 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <style>
-        /* Toggle switch styles */
-        .switch { position: relative; display: inline-block; width: 44px; height: 24px; margin-right: 8px; vertical-align: middle; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .18s; border-radius: 24px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: #fff; transition: .18s; border-radius: 50%; }
-        .switch input:checked + .slider { background-color: #4caf50; }
-        .switch input:checked + .slider:before { transform: translateX(20px); }
-        .switch input:focus + .slider { box-shadow: 0 0 1px #4caf50; }
-
-        /* Visual for completed item */
-        .grocerie-item.completed .grocerie-name { text-decoration: line-through; opacity: 0.6; }
-
-        /* Small layout niceties */
-        .grocerie-item { display: flex; align-items: center; gap: 8px; padding: 6px 0; }
-        .grocerie-controls { margin-left: auto; display: flex; gap: 8px; align-items: center; }
-    </style>
+    <link rel="stylesheet" href="handlelisteStyle.css">
 </head> 
 <body>
     <h1>handleliste her !!!!</h1>
@@ -102,6 +86,7 @@
             let name = document.getElementById('grocerie').value.trim();
             const qtyStr = document.getElementById('quantity').value.trim();
             const massurment = document.getElementById('massurmentChoiceForGroceries').value;
+            const category = document.getElementById('categoryChoiceForGroceries').value;
             const completed = false;
             // Capitalize first letter of name
             name = capitalizeFirstLetter(name);
@@ -117,7 +102,7 @@
             const res = await fetch('/api/grocerieList', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name, quantity: qty , massurment, completed })
+                body: JSON.stringify({ name, quantity: qty , massurment, completed, category })
             });
             const json = await res.json();
 
@@ -195,10 +180,16 @@
                 deleteBtn.type = 'button';
                 deleteBtn.className = 'delete-btn';
                 deleteBtn.setAttribute('aria-label', `Delete ${item.name}`);
-                deleteBtn.textContent = 'Slett';
+                deleteBtn.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                        <path d="M10 11v6" />
+                        <path d="M14 11v6" />
+                    </svg>`;
 
-                // Click handler to request deletion
-                deleteBtn.addEventListener('click', () => handleDeleteGrocerie(item.name, grocerieList));
+                // Click handler to request deletion (prevent event bubbling so parent handlers don't intercept the click)
+                deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); handleDeleteGrocerie(item.name, grocerieList); });
 
                 controls.appendChild(qtySpan);
                 controls.appendChild(deleteBtn);
