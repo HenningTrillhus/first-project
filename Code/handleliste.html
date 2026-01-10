@@ -28,15 +28,15 @@
 
                 <label for="categoryChoiceForGroceries">
                     <select name="category" id="categoryChoiceForGroceries">
-                        <option value="Frukt og grønt">Annet</option>
+                        <option value="Annet">Annet</option>
                         <option value="Frukt og grønt">Frukt og grønt</option>
                         <option value="Kjøtt og fisk">Kjøtt og fisk</option>
-                        <option value="Dagligvarer">Dagligvarer</option>
+                        <option value="Meieri">Meieri</option>
                         <option value="Drikke">Drikke</option>
                         <option value="Bakevarer">Bakevarer</option>
                         <option value="Frostvarer">Frostvarer</option>
                         <option value="Husholdning">Husholdning</option>
-                        <option value="HelseVellveret">Helse & vellvære</option>
+                        <option value="Helse & vellvære">Helse & vellvære</option>
                         <option value="Kos">Kos</option>
                     </select>
                 </label>
@@ -52,6 +52,49 @@
         }
 
         const grocerieListItemsNames = [];
+
+        // Category color map stored in localStorage so user's choices persist
+        const defaultCategoryColors = {
+            'Annet': 'rgb(255,255,255)',
+            'Frukt og grønt': 'rgb(231,249,231)',
+            'Kjøtt og fisk': 'rgb(255,236,236)',
+            'Meieri': 'rgb(255,247,217)',
+            'Drikke': 'rgb(231,245,255)',
+            'Bakevarer': 'rgb(255,241,224)',
+            'Frostvarer': 'rgb(238,247,255)',
+            'Husholdning': 'rgb(247,247,251)',
+            'Helse & vellvære': 'rgb(255,176,197)',
+            'Kos': 'rgb(255,240,247)'
+        };
+        let categoryColors = loadCategoryColors();
+
+        function loadCategoryColors(){
+            try{
+                const stored = localStorage.getItem('categoryColors');
+                if (stored) return Object.assign({}, defaultCategoryColors, JSON.parse(stored));
+            }catch(e){ /* ignore */ }
+            return Object.assign({}, defaultCategoryColors);
+        }
+        function saveCategoryColors(){
+            try{ localStorage.setItem('categoryColors', JSON.stringify(categoryColors)); }catch(e){}
+        }
+        function getCategoryColor(cat){ return categoryColors[cat] || '#ffffff'; }
+
+        // update color input when category changes
+        const categorySelectEl = document.getElementById('categoryChoiceForGroceries');
+        const categoryColorEl = document.getElementById('categoryColor');
+        if (categorySelectEl && categoryColorEl){
+            // initialize color input
+            categoryColorEl.value = getCategoryColor(categorySelectEl.value);
+            categorySelectEl.addEventListener('change', () => {
+                categoryColorEl.value = getCategoryColor(categorySelectEl.value);
+            });
+            // when the user picks a color, save it for that category
+            categoryColorEl.addEventListener('input', () => {
+                categoryColors[categorySelectEl.value] = categoryColorEl.value;
+                saveCategoryColors();
+            });
+        }
 
         document.getElementById('addGroceriesButton').addEventListener('click', addGroceris);
 
@@ -88,6 +131,11 @@
             const massurment = document.getElementById('massurmentChoiceForGroceries').value;
             const category = document.getElementById('categoryChoiceForGroceries').value;
             const completed = false;
+            // persist the currently selected color for this category
+            try {
+                const chosen = document.getElementById('categoryColor').value;
+                if (chosen) { categoryColors[category] = chosen; saveCategoryColors(); }
+            } catch(e) {}
             // Capitalize first letter of name
             name = capitalizeFirstLetter(name);
 
@@ -183,15 +231,29 @@
                 // reflect completed visually on the item container
                 if (item.completed) li.classList.add('completed');
 
+                // add category class based on the category name (safe CSS class)
+                const categoryClass = 'category-' + categoryName.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+                li.classList.add(categoryClass);
+
+                // create inner container for the item — background will be per-category
+                const inner = document.createElement('div');
+                inner.className = 'grocerie-inner';
+                // set background color from saved category colors (solid, no gradient or transparency)
+                const bgColor = getCategoryColor(categoryName) || '#ffffff';
+                inner.style.backgroundColor = bgColor;
+                inner.style.backgroundImage = 'none';
+
+                // create the name box (white rounded)
                 const nameSpan = document.createElement('span');
                 nameSpan.className = 'grocerie-name';
                 nameSpan.textContent = item.name;
+                const nameBox = document.createElement('div');
+                nameBox.className = 'grocerie-name-box';
+                nameBox.appendChild(nameSpan);
 
+                // create the controls box (qty + delete) as a white rounded group
                 const controls = document.createElement('div');
                 controls.className = 'grocerie-controls';
-
-                // add toggle switch before the name so it appears as the first control
-                li.appendChild(switchLabel);
 
                 const qtySpan = document.createElement('span');
                 qtySpan.className = 'grocerie-qty';
@@ -215,8 +277,16 @@
                 controls.appendChild(qtySpan);
                 controls.appendChild(deleteBtn);
 
-                li.appendChild(nameSpan);
-                li.appendChild(controls);
+                const controlsBox = document.createElement('div');
+                controlsBox.className = 'grocerie-controls-box';
+                controlsBox.appendChild(controls);
+
+                // add toggle switch and boxes into the inner container
+                inner.appendChild(switchLabel);
+                inner.appendChild(nameBox);
+                inner.appendChild(controlsBox);
+
+                li.appendChild(inner);
 
                 ul.appendChild(li);
 

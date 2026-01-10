@@ -32,7 +32,7 @@
 /* Style delete button SVG and make it clickable */
 .delete-btn { background: transparent; border: none; cursor: pointer; padding: 4px; display: inline-flex; align-items: center; justify-content: center; }
 .delete-btn svg { width: 20px; height: 20px; display: block; stroke: currentColor; }
-    
+
 /* Category grouping header */
 .category-header { 
     font-weight: 700; 
@@ -45,3 +45,115 @@
 
 /* Small extra spacing for groups so items are visually separated */
 .category-header + .grocerie-item { padding-top: 6px; }
+
+/* White rounded boxes around name and controls */
+.grocerie-name-box, .grocerie-controls-box {
+    background: #fff;
+    border-radius: 10px;
+    padding: 0.45rem 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 6px 18px rgba(11,37,69,0.06);
+}
+.grocerie-name-box { flex: 1 1 auto; min-width: 0; }
+.grocerie-controls-box { flex: 0 0 auto; margin-left: 0.5rem; display: flex; align-items: center; }
+
+/* Tweak grocerie item layout to make the colored background visible behind the white boxes */
+.grocerie-item { display: flex; gap: 0.75rem; align-items: center; padding: 0; border-radius: 12px; }
+
+/* Inner element that receives the category background */
+.grocerie-inner { width: 100%; display:flex; align-items:center; gap:0.75rem; padding: 0.9rem; border-radius: 12px; box-sizing: border-box; }
+
+/* Per-category background colors (slightly translucent) */
+.category-annet { background-color: rgba(255,255,255,0.92); }
+.category-frukt-og-gront { background-color: rgba(231,249,231,0.92); }
+.category-kjott-og-fisk { background-color: rgba(255,236,236,0.92); }
+.category-meieri { background-color: rgba(255,247,217,0.92); }
+.category-drikke { background-color: rgba(231,245,255,0.92); }
+.category-bakevarer { background-color: rgba(255,241,224,0.92); }
+.category-frostvarer { background-color: rgba(238,247,255,0.92); }
+.category-husholdning { background-color: rgba(247,247,251,0.92); }
+.category-helse-vellvære { background-color: rgba(255,176,197,0.92); }
+.category-kos { background-color: rgba(255,240,247,0.92); }
+
+/* Completed visual state */
+.grocerie-item.completed { opacity: 0.6; }
+.grocerie-item.completed .grocerie-name { text-decoration: line-through; opacity: 0.6; }
+
+
+/* Container that scrolls internally and does not disturb page layout */
+#groceriesList {
+    position: fixed;
+    top: 25vh; /* placed below the top content area */
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 2rem);
+    max-width: 920px;
+    bottom: 6vh; /* allow some space above the bottom */
+    padding: 1rem;
+    border-radius: 12px;
+    background: linear-gradient(180deg, #ffffff, #f6fbff);
+    box-shadow: 0 40px 100px rgba(14,30,37,0.06);
+    border: 1px solid rgba(11,37,69,0.04);
+
+    /* Make the box scroll internally without affecting the page */
+    overflow-y: auto;
+    box-sizing: border-box;
+}
+
+#groceriesList h2 {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 1rem 0;
+    padding: 0.45rem 0.85rem;
+    font-size: 1rem;
+    color: #ffffff; /* white text for contrast */
+    background: linear-gradient(180deg, #0b66ff 0%, #005ce6 100%);
+    border-radius: 10px;
+    font-weight: 700;
+    box-shadow: 0 6px 18px rgba(11,92,230,0.14);
+    border: 1px solid rgba(255,255,255,0.06);
+    letter-spacing: 0.2px;
+}
+
+#groceriesUl {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.5rem;
+}
+
+/* Smooth touch scrolling on iOS */
+#groceriesList {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Responsive adjustments for small screens */
+@media (max-width: 600px) {
+    :root { --safe-bottom: env(safe-area-inset-bottom, 0px); }
+    #groceriesList {
+        top: 28vh; /* move list lower so inputs and heading are visible */
+        bottom: calc(var(--safe-bottom) + 6vh);
+        padding: 0.8rem;
+    }
+    #groceriesList h2 {
+        font-size: 0.95rem;
+        padding: 0.4rem 0.7rem;
+    }
+    .grocerie-item { padding: 0.5rem 0; gap: 6px; }
+    .category-header { padding: 8px 0 4px; }
+}
+
+@media (max-width: 420px) {
+    #groceriesList {
+        top: 25vh; /* on very small screens, ensure the inputs can sit above the list */
+        padding: 0.6rem;
+        bottom: calc(var(--safe-bottom, 0px) + 6vh);
+    }
+    #groceriesList h2 { font-size: 0.95rem; }
+    .grocerie-name { font-size: 1rem; }
+    .grocerie-qty { font-size: 0.95rem; min-width: 44px; }
+}
