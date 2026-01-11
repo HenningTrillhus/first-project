@@ -11,6 +11,9 @@
         <button onclick="location.href='index.html'">
             Gå til kjøleskap
         </button>
+        <button onclick="location.href='savedhandleliste.html'">
+            Gå til handleliste arkiv
+        </button>
     </div>
 
 
@@ -454,10 +457,156 @@
         Ferdig
     </button>
 
+    <div id="finishShoppingModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h2>Registrer handleturen</h2>
+            <form id="finishShoppingForm">
+                <div class="form-group">
+                    <label for="shopName">Butikk:</label>
+                    <input type="text" id="shopName" name="shopName" placeholder="F.eks. Rema 1000" required>
+                </div>
+                <div class="form-group">
+                    <label for="shopCost">Kostnad (kr):</label>
+                    <input type="number" id="shopCost" name="shopCost" placeholder="F.eks. 450.50" step="0.01" min="0" required>
+                </div>
+                <div class="form-buttons">
+                    <button type="submit" class="btn-submit">Lagre</button>
+                    <button type="button" class="btn-cancel" onclick="cancelFinishShopping()">Avbryt</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         function finishShopping() {
-            alert('Gratulerer! Du er ferdig med handleturen! 🎉');
+            // Show the modal dialog
+            const modal = document.getElementById('finishShoppingModal');
+            modal.style.display = 'flex';
         }
+
+        function cancelFinishShopping() {
+            const modal = document.getElementById('finishShoppingModal');
+            modal.style.display = 'none';
+            // Reset form
+            document.getElementById('finishShoppingForm').reset();
+        }
+
+        async function processFinishShopping(shopName, shopCost) {
+            try {
+                // Fetch the current grocery list from the server
+                const res = await fetch('/api/grocerieList');
+                const json = await res.json();
+                
+                if (!json.grocerieList || !Array.isArray(json.grocerieList)) {
+                    alert('Could not retrieve grocery list');
+                    return;
+                }
+                
+                // Filter completed items and create an object
+                const completedItems = json.grocerieList.filter(item => item.completed);
+                
+                const completedObject = {
+                    timestamp: new Date().toISOString(),
+                    shopName: shopName,
+                    cost: parseFloat(shopCost),
+                    itemCount: completedItems.length,
+                    items: completedItems.map(item => ({
+                        name: item.name,
+                        quantity: item.quantity,
+                        massurment: item.massurment,
+                        category: item.category,
+                        importance: item.importance
+                    }))
+                };
+                
+                console.log('Completed shopping items:', completedObject);
+                
+                // POST the completed list to the backend
+                try {
+                    const postRes = await fetch('/api/handleliste', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(completedObject)
+                    });
+                    const postJson = await postRes.json();
+                    if (postJson.ok) {
+                        console.log('Completed list saved to backend with ID:', postJson.savedListId);
+                    } else {
+                        console.warn('Failed to save to backend:', postJson.error);
+                    }
+                } catch(err) {
+                    console.error('Error posting to backend:', err);
+                }
+                
+                // Add completed items to the ingredients list on the index page
+                try {
+                    completedItems.forEach(item => {
+                        const ingredientRes = fetch('/api/ingredients', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                name: item.name, 
+                                quantity: item.quantity, 
+                                massurment: item.massurment 
+                            })
+                        });
+                    });
+                    console.log('Completed items added to ingredients list');
+                } catch(err) {
+                    console.error('Error adding completed items to ingredients list:', err);
+                }
+                
+                // Clear completed items from the backend and frontend
+                try {
+                    const deleteRes = await fetch('/api/grocerieList/completed', {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    const deleteJson = await deleteRes.json();
+                    if (deleteJson.ok) {
+                        console.log(`Removed ${deleteJson.removedCount} completed items from list`);
+                        // Re-render the list to show remaining items
+                        renderGroceries(deleteJson.grocerieList);
+                    } else {
+                        console.warn('Failed to clear completed items:', deleteJson.error);
+                    }
+                } catch(err) {
+                    console.error('Error clearing completed items:', err);
+                }
+                
+                // Save to localStorage for persistence
+                try {
+                    localStorage.setItem('lastCompletedShopping', JSON.stringify(completedObject));
+                } catch(e) {
+                    console.warn('Could not save to localStorage', e);
+                }
+                
+                // Close modal
+                cancelFinishShopping();
+            } catch (err) {
+                console.error('Error processing completed items:', err);
+                alert('En feil oppstod under behandling av handlelisten');
+            }
+        }
+
+        // Handle form submission
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('finishShoppingForm');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const shopName = document.getElementById('shopName').value.trim();
+                    const shopCost = document.getElementById('shopCost').value.trim();
+                    
+                    if (!shopName || !shopCost) {
+                        alert('Vennligst fyll inn alle feltene');
+                        return;
+                    }
+                    
+                    processFinishShopping(shopName, shopCost);
+                });
+            }
+        });
     </script>
 
 </body>

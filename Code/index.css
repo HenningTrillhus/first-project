@@ -247,20 +247,69 @@ body {
     display: grid;
     gap: 0.5rem;
 }
+.category-header {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #0b2545;
+    padding: 0.75rem 0.5rem 0.4rem 0.5rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.25rem;
+    border-bottom: 2px solid rgba(11,37,69,0.15);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: transparent;
+}
+.category-header:first-child {
+    margin-top: 0;
+}
 .ingredient-item {
     display: flex;
-    gap: 0.6rem;
+    gap: 0.75rem;
     align-items: center;
-    padding: 0.6rem 0.75rem;
-    border-radius: 10px;
-    background: #fff;
-    border: 1px solid rgba(11,37,69,0.04);
+    padding: 0;
+    border-radius: 12px;
     transition: transform .12s ease, box-shadow .12s ease;
 }
 .ingredient-item:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 18px rgba(11,37,69,0.06);
 }
+
+/* Inner element that receives the category background */
+.ingredient-inner {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.9rem;
+    border-radius: 12px;
+    box-sizing: border-box;
+}
+
+/* White rounded boxes around name and controls */
+.ingredient-name-box,
+.ingredient-controls-box {
+    background: #fff;
+    border-radius: 10px;
+    padding: 0.45rem 0.75rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 6px 18px rgba(11,37,69,0.06);
+}
+
+.ingredient-name-box {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.ingredient-controls-box {
+    flex: 0 0 auto;
+    margin-left: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
 .ingredient-name {
     font-weight: 700;
     color: #0b2545;
@@ -271,7 +320,24 @@ body {
     line-height: 1.2;
     letter-spacing: 0.2px;
 }
-.ingredient-controls{ display: inline-flex; gap: 0.5rem; align-items: center; }
+
+.ingredient-controls {
+    display: inline-flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+/* Per-category background colors (slightly translucent) */
+.category-annet { background-color: rgba(255,255,255,0.92); }
+.category-frukt-og-gront { background-color: rgba(231,249,231,0.92); }
+.category-kjott-og-fisk { background-color: rgba(255,236,236,0.92); }
+.category-meieri { background-color: rgba(255,247,217,0.92); }
+.category-drikke { background-color: rgba(231,245,255,0.92); }
+.category-bakevarer { background-color: rgba(255,241,224,0.92); }
+.category-frostvarer { background-color: rgba(238,247,255,0.92); }
+.category-husholdning { background-color: rgba(247,247,251,0.92); }
+.category-helse-vellvære { background-color: rgba(255,176,197,0.92); }
+.category-kos { background-color: rgba(255,240,247,0.92); }
 .ingredient-qty {
     display:inline-flex;
     align-items: center;

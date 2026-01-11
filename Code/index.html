@@ -8,9 +8,11 @@
 </head>
 <body>
     <div id="menuBoxTop">
-        <p>Meny</p>
         <button onclick="location.href='handleliste.html'">
-            Gå til neste side
+            Gå til handlesliste
+        </button>
+        <button onclick="location.href='savedhandleliste.html'">
+            Gå til handleliste arkiv
         </button>
     </div>
 
@@ -33,6 +35,21 @@
                     </select>
                 </label>
                 <input id="quantity" type="text" inputmode="decimal" step="any" name="quantity" placeholder="Enter quantity (e.g., 1,5)">
+                
+                <label for="categoryChoice">
+                    <select name="category" id="categoryChoice">
+                        <option value="Annet">Annet</option>
+                        <option value="Frukt og grønt">Frukt og grønt</option>
+                        <option value="Kjøtt og fisk">Kjøtt og fisk</option>
+                        <option value="Meieri">Meieri</option>
+                        <option value="Drikke">Drikke</option>
+                        <option value="Bakevarer">Bakevarer</option>
+                        <option value="Frostvarer">Frostvarer</option>
+                        <option value="Husholdning">Husholdning</option>
+                        <option value="Helse & vellvære">Helse & vellvære</option>
+                        <option value="Kos">Kos</option>
+                    </select>
+                </label>
             </div>
             <button id="addIngridientButton">
                 Legg til ingredients
@@ -70,6 +87,7 @@
                 let name = document.getElementById('ingredient').value.trim();
                 const qtyStr = document.getElementById('quantity').value.trim();
                 const massurment = document.getElementById('massurmentChoice').value;
+                const category = document.getElementById('categoryChoice').value;
                 // Capitalize first letter of name
                 name = capitalizeFirstLetter(name);
 
@@ -84,7 +102,7 @@
                 const res = await fetch('/api/ingredients', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, quantity: qty , massurment })
+                    body: JSON.stringify({ name, quantity: qty , massurment, category })
                 });
                 const json = await res.json();
 
@@ -120,50 +138,112 @@
                 const ul = document.getElementById('ingredientsUl');
                 // Clear existing list
                 ul.innerHTML = '';
-                // Add each ingredient as a list item
+                
+                // Define category order
+                const categoryOrder = [
+                    'Frukt og grønt',
+                    'Kjøtt og fisk',
+                    'Meieri',
+                    'Drikke',
+                    'Bakevarer',
+                    'Frostvarer',
+                    'Husholdning',
+                    'Helse & vellvære',
+                    'Kos',
+                    'Annet'
+                ];
+                
+                // Group ingredients by category
+                const groupedIngredients = {};
+                categoryOrder.forEach(cat => { groupedIngredients[cat] = []; });
+                
                 ingredients.forEach(ingredient => {
-                    const li = document.createElement('li');
-                    li.className = 'ingredient-item';
-
-                    const nameSpan = document.createElement('span');
-                    nameSpan.className = 'ingredient-name';
-                    nameSpan.textContent = ingredient.name;
-
-                    const controls = document.createElement('div');
-                    controls.className = 'ingredient-controls';
-
-                    const qtySpan = document.createElement('span');
-                    qtySpan.className = 'ingredient-qty';
-                    qtySpan.textContent = `${ingredient.quantity} ${ingredient.massurment}`;
-
-                    const deleteBtn = document.createElement('button');
-                    deleteBtn.type = 'button';
-                    deleteBtn.className = 'delete-btn';
-                    deleteBtn.setAttribute('aria-label', `Delete ${ingredient.name}`);
-                    deleteBtn.innerHTML = `
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                            <polyline points="3 6 5 6 21 6" />
-                            <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                            <path d="M10 11v6" />
-                            <path d="M14 11v6" />
-                        </svg>`;
-
-                    // Click handler to request deletion
-                    deleteBtn.addEventListener('click', () => handleDeleteIngredient(ingredient.name,ingredients));
-
-                    controls.appendChild(qtySpan);
-                    controls.appendChild(deleteBtn);
-
-                    li.appendChild(nameSpan);
-                    li.appendChild(controls);
-
-                    ul.appendChild(li);
-
-                    document.getElementById('ingredient').value = '';
-                    document.getElementById('quantity').value = '';
-                    document.getElementById('massurmentChoice').value = 'stk';
+                    const cat = ingredient.category || 'Annet';
+                    if (!groupedIngredients[cat]) groupedIngredients[cat] = [];
+                    groupedIngredients[cat].push(ingredient);
                 });
-            }
+                
+                // Render each category group
+                categoryOrder.forEach(category => {
+                    const items = groupedIngredients[category];
+                    if (items.length === 0) return;
+                    
+                    // Add category header
+                    const categoryHeader = document.createElement('li');
+                    categoryHeader.className = 'category-header';
+                    categoryHeader.textContent = category;
+                    ul.appendChild(categoryHeader);
+                    
+                    // Add ingredients in this category
+                    items.forEach(ingredient => {
+                        const li = document.createElement('li');
+                        li.className = 'ingredient-item';
+                        li.setAttribute('data-category', category);
+
+                        // Add category class based on the category name (safe CSS class)
+                        const categoryClass = 'category-' + category.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+                        li.classList.add(categoryClass);
+
+                        // Create inner container for the item — background will be per-category
+                        const inner = document.createElement('div');
+                        inner.className = 'ingredient-inner';
+
+                        // Create the name box (white rounded)
+                        const nameSpan = document.createElement('span');
+                        nameSpan.className = 'ingredient-name';
+                        nameSpan.textContent = ingredient.name;
+                        const nameBox = document.createElement('div');
+                        nameBox.className = 'ingredient-name-box';
+                        nameBox.appendChild(nameSpan);
+
+                        // Create the controls box (qty + delete) as a white rounded group
+                        const controls = document.createElement('div');
+                        controls.className = 'ingredient-controls';
+
+                        const qtySpan = document.createElement('span');
+                        qtySpan.className = 'ingredient-qty';
+                        qtySpan.textContent = `${ingredient.quantity} ${ingredient.massurment}`;
+
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.type = 'button';
+                        deleteBtn.className = 'delete-btn';
+                        deleteBtn.setAttribute('aria-label', `Delete ${ingredient.name}`);
+                        deleteBtn.innerHTML = `
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polyline points="3 6 5 6 21 6" />
+                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                                <path d="M10 11v6" />
+                                <path d="M14 11v6" />
+                            </svg>`;
+
+                        // Click handler to request deletion
+                        deleteBtn.addEventListener('click', () => handleDeleteIngredient(ingredient.name,ingredients));
+
+                        controls.appendChild(qtySpan);
+                        controls.appendChild(deleteBtn);
+
+                        const controlsBox = document.createElement('div');
+                        controlsBox.className = 'ingredient-controls-box';
+                        controlsBox.appendChild(controls);
+
+                        // Add boxes into the inner container
+                        inner.appendChild(nameBox);
+                        inner.appendChild(controlsBox);
+
+                        li.appendChild(inner);
+
+                        ul.appendChild(li);
+
+                        });
+                    });
+                };
+                
+                // Reset form fields
+                document.getElementById('ingredient').value = '';
+                document.getElementById('quantity').value = '';
+                document.getElementById('massurmentChoice').value = 'stk';
+                document.getElementById('categoryChoice').value = 'Annet';
+            
             async function handleDeleteIngredient(name, ingredients){
                 try {
                     const res = await fetch('/api/ingredients', {

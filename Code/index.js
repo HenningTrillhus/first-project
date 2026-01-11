@@ -6,6 +6,7 @@ const port = process.env.PORT || 3000;
 
 const ingredients = [];
 const grocerieList = [];
+const SavedGrocerieList = [];
 
 app.use(express.static(path.join(__dirname)));
 app.use(express.json());
@@ -31,9 +32,12 @@ app.post('/api/ingredients', (req, res) => {
 
     // Handle massurment, defaulting to an "Stk" string if not provided
     const massurment = req.body.massurment || 'stk';
+    
+    // Handle category, defaulting to "Annet" if not provided
+    const category = req.body.category || 'Annet';
 
     // Create ingredient object to store in the list of ingredients
-    const ingredient = { name, quantity, massurment };
+    const ingredient = { name, quantity, massurment, category };
 
     // Check if ingredient with the same name already exists in the list
     if (ingredients.some(ing => ing.name === ingredient.name)) {
@@ -43,6 +47,8 @@ app.post('/api/ingredients', (req, res) => {
             // Update quantity if names match
             if (ing.name === ingredient.name) {
                 ing.quantity += ingredient.quantity;
+                // Update category if provided
+                if (category) ing.category = category;
                 // If quantity becomes zero or negative, remove the ingredient from the list
                 if (ing.quantity <= 0) {
                     const idx = ingredients.indexOf(ing);
@@ -96,7 +102,8 @@ app.put('/api/ingredients', (req, res) => {
   const newIngredients = Array.isArray(req.body.ingredients) ? req.body.ingredients.map(i => ({
     name: String(i.name || '').trim(),
     quantity: parseFloat(i.quantity) || 0,
-    massurment: i.massurment || 'stk'
+    massurment: i.massurment || 'stk',
+    category: i.category || 'Annet'
   })).filter(i => i.name && i.quantity > 0) : null;
 
   if (newIngredients === null) {
@@ -208,4 +215,44 @@ app.patch('/api/grocerieList', (req, res) => {
   grocerie.completed = completed;
   console.log(`updated completed for ${name} =>`, completed);
   res.json({ ok: true, grocerieList });
+});
+
+
+// Endpoint to save completed shopping list to archive
+app.post('/api/handleliste', (req, res) => {
+  const completedList = req.body;
+  
+  if (!completedList || !completedList.items) {
+    return res.status(400).json({ ok: false, error: 'Invalid completed list format' });
+  }
+  
+  // Add the completed list to the archive
+  SavedGrocerieList.push(completedList);
+  
+  console.log('Saved completed shopping list:', completedList);
+  console.log('Total saved lists:', SavedGrocerieList.length);
+  
+  res.json({ ok: true, savedListId: SavedGrocerieList.length - 1, totalSavedLists: SavedGrocerieList.length });
+});
+
+// Endpoint to get all saved shopping lists
+app.get('/api/handleliste', (req, res) => {
+  res.json({ ok: true, SavedGrocerieList, totalCount: SavedGrocerieList.length });
+});
+
+// Endpoint to clear completed items from the current grocery list
+app.delete('/api/grocerieList/completed', (req, res) => {
+  const initialCount = grocerieList.length;
+  
+  // Remove all completed items from the list
+  for (let i = grocerieList.length - 1; i >= 0; i--) {
+    if (grocerieList[i].completed) {
+      grocerieList.splice(i, 1);
+    }
+  }
+  
+  const removedCount = initialCount - grocerieList.length;
+  console.log(`Removed ${removedCount} completed items from grocery list`);
+  
+  res.json({ ok: true, removedCount, remainingCount: grocerieList.length, grocerieList });
 });
