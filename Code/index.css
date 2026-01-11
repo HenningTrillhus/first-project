@@ -100,7 +100,7 @@ body {
 }
 
 /* Inputs / select / button shared styles */
-#ingredient, #quantity, #massurmentChoice{
+#ingredient, #quantity, #massurmentChoice, #categoryChoice{
     padding: 0.55rem 0.75rem;
     border-radius: 8px;
     border: 1px solid #d0d7de;
@@ -108,10 +108,30 @@ body {
     font-size: 1rem;
     height: 40px;
     box-sizing: border-box;
+    color: #0b2545;
+    font-weight: 500;
+    transition: all 0.2s ease;
 }
 
-#massurmentChoice{
+#massurmentChoice, #categoryChoice{
     height: 40px;
+    cursor: pointer;
+}
+
+#ingredient:hover, #quantity:hover, #massurmentChoice:hover, #categoryChoice:hover{
+    border-color: #0b66ff;
+    box-shadow: 0 2px 8px rgba(11, 102, 255, 0.1);
+}
+
+#ingredient:focus, #quantity:focus, #massurmentChoice:focus, #categoryChoice:focus{
+    outline: none;
+    border-color: #0b66ff;
+    box-shadow: 0 0 0 3px rgba(11, 102, 255, 0.15);
+}
+
+#categoryChoice {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+    min-width: 160px;
 }
 
 /* Group the unit selector and quantity on a single row */
@@ -149,7 +169,7 @@ body {
 }
 
 /* Focus states */
-#ingredient:focus, #quantity:focus, #massurmentChoice:focus, #addIngridientButton:focus{
+#addIngridientButton:focus{
     outline: none;
     box-shadow: 0 0 0 3px rgba(0,122,204,0.12);
 }
