@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -7,6 +8,7 @@ const port = process.env.PORT || 3000;
 const ingredients = [];
 const grocerieList = [];
 const SavedGrocerieList = [];
+const recipes = [];
 
 app.use(express.static(path.join(__dirname)));
 app.use(express.json());
@@ -18,6 +20,45 @@ app.get('/api/status', (req, res) => {
 app.listen(port, () => {
   console.log(`Server running at http://localhost:${port}/`);
 });
+
+// ---------------------------------------------------------
+// Recipes: load initial data from oppskrifter.json (if available)
+try {
+  const recipesPath = path.join(__dirname, 'oppskrifter.json');
+  if (fs.existsSync(recipesPath)) {
+    const raw = fs.readFileSync(recipesPath, 'utf8');
+    const arr = JSON.parse(raw);
+    if (Array.isArray(arr)) {
+      arr.forEach(r => {
+        const id = typeof r.id === 'number' ? r.id : Date.now();
+        const name = String(r.name || '').trim();
+        const description = String(r.description || '').trim();
+        const servings = Number.isFinite(r.servings) && r.servings > 0 ? r.servings : 2;
+        const image = r.image ? String(r.image).trim() : undefined;
+        const ingredientsArr = Array.isArray(r.ingredients) ? r.ingredients.map(i => ({
+          name: String(i.name || '').trim(),
+          measurement: String(i.measurement || 'stk').trim(),
+          quantity: Number.isFinite(parseFloat(i.quantity)) ? parseFloat(i.quantity) : 0,
+          category: String(i.category || 'Annet').trim()
+        })).filter(i => i.name) : [];
+        const recipe = { id, name, description, servings, ingredients: ingredientsArr };
+        if (image) recipe.image = image;
+        recipes.push(recipe);
+      });
+    }
+  }
+} catch (e) {
+  console.warn('Could not load recipes from oppskrifter.json', e);
+}
+
+function persistRecipes() {
+  const recipesPath = path.join(__dirname, 'oppskrifter.json');
+  try {
+    fs.writeFileSync(recipesPath, JSON.stringify(recipes, null, 2), 'utf8');
+  } catch (e) {
+    console.warn('Could not persist recipes', e);
+  }
+}
 
 // Endpoint to add ingredients to the list
 app.post('/api/ingredients', (req, res) => {
@@ -79,6 +120,33 @@ app.post('/api/ingredients', (req, res) => {
 // Endpoint to get the full list of ingredients
 app.get('/api/ingredients', (req, res) => {
   res.json({ ok: true, ingredients });
+});
+
+// ---------------------------------------------------------
+// Recipes API
+app.get('/api/recipes', (req, res) => {
+  res.json({ ok: true, recipes });
+});
+
+app.post('/api/recipes', (req, res) => {
+  const name = req.body && req.body.name ? String(req.body.name).trim() : '';
+  if (!name) {
+    return res.status(400).json({ ok: false, error: 'Recipe name is required' });
+  }
+
+  const servings = 2; // fixed per UI requirement
+  const ingredientsArr = Array.isArray(req.body.ingredients) ? req.body.ingredients.map(i => ({
+    name: String(i.name || '').trim(),
+    measurement: String(i.measurement || 'stk').trim(),
+    quantity: Number.isFinite(parseFloat(i.quantity)) ? parseFloat(i.quantity) : 0,
+    category: String(i.category || 'Annet').trim()
+  })).filter(i => i.name) : [];
+
+  const nextId = recipes.length ? Math.max(...recipes.map(r => r.id || 0)) + 1 : 1;
+  const recipe = { id: nextId, name, description: '', servings, ingredients: ingredientsArr };
+  recipes.push(recipe);
+  persistRecipes();
+  res.json({ ok: true, recipe, recipes });
 });
 
 // Endpoint to delete a single ingredient by name (expects JSON { name })

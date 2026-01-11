@@ -1,0 +1,281 @@
+[
+  {
+    "id": 1,
+    "name": "Taco",
+    "description": "Alltid lov med taco!",
+    "servings": 2,
+    "ingredients": [
+      {
+        "name": "kjøttdeig",
+        "measurement": "g",
+        "quantity": 400,
+        "category": "Kjøtt og fisk"
+      },
+      {
+        "name": "Taco tortillas",
+        "measurement": "stk",
+        "quantity": 8,
+        "category": "Bakevarer"
+      },
+      {
+        "name": "Salsa",
+        "measurement": "ml",
+        "quantity": 150,
+        "category": "Annet"
+      },
+      {
+        "name": "Ost",
+        "measurement": "g",
+        "quantity": 100,
+        "category": "Meieri"
+      },
+      {
+        "name": "Salat",
+        "measurement": "g",
+        "quantity": 80,
+        "category": "Frukt og grønt"
+      },
+      {
+        "name": "Taco krydder",
+        "measurement": "stk",
+        "quantity": 1,
+        "category": "Annet"
+      },
+      {
+        "name": "Nacho chips",
+        "measurement": "stk",
+        "quantity": 1,
+        "category": "Annet"
+      }
+    ],
+    "image": "tacoImage.png"
+  },
+  {
+    "id": 2,
+    "name": "pølser",
+    "description": "Enkel og rask rett med pølser",
+    "servings": 2,
+    "ingredients": [
+      {
+        "name": "pølser",
+        "measurement": "stk",
+        "quantity": 10,
+        "category": "Kjøtt og fisk"
+      },
+      {
+        "name": "brød",
+        "measurement": "stk",
+        "quantity": 5,
+        "category": "Bakevarer"
+      },
+      {
+        "name": "Lumper",
+        "measurement": "stk",
+        "quantity": 5,
+        "category": "Bakevarer"
+      },
+      {
+        "name": "Ketchup",
+        "measurement": "ml",
+        "quantity": 100,
+        "category": "Annet"
+      }
+    ],
+    "image": "polserImage.png"
+  },
+  {
+    "id": 3,
+    "name": "Potetmos",
+    "description": "",
+    "servings": 2,
+    "ingredients": [
+      {
+        "name": "Potet",
+        "measurement": "g",
+        "quantity": 400,
+        "category": "Frukt og grønt"
+      },
+      {
+        "name": "Melk",
+        "measurement": "ml",
+        "quantity": 100,
+        "category": "Meieri"
+      }
+    ],
+    "image": "potetmosImage.png"
+  },
+  {
+    "id": 4,
+    "name": "Pasta Bolognese",
+    "description": "",
+    "servings": 2,
+    "ingredients": [
+      {
+        "name": "Løk",
+        "measurement": "stk",
+        "quantity": 0.5,
+        "category": "Frukt og grønt"
+      },
+      {
+        "name": "Hvitløk",
+        "measurement": "stk",
+        "quantity": 1,
+        "category": "Frukt og grønt"
+      },
+      {
+        "name": "Gulrot",
+        "measurement": "stk",
+        "quantity": 0.5,
+        "category": "Frukt og grønt"
+      },
+      {
+        "name": "kjøttdeig",
+        "measurement": "g",
+        "quantity": 400,
+        "category": "Kjøtt og fisk"
+      },
+      {
+        "name": "Hermetiske tomater",
+        "measurement": "stk",
+        "quantity": 1,
+        "category": "Annet"
+      },
+      {
+        "name": "Tomat pure",
+        "measurement": "stk",
+        "quantity": 1,
+        "category": "Annet"
+      },
+      {
+        "name": "Pasta",
+        "measurement": "g",
+        "quantity": 200,
+        "category": "Bakevarer"
+      }
+    ],
+    "image": "pastabolognesImage.jpg"
+  },
+  {
+    "id": 5,
+    "name": "Hjemmelaget Pizza",
+    "description": "",
+    "servings": 2,
+    "ingredients": [
+      {
+        "name": "Pizza bund",
+        "measurement": "stk",
+        "quantity": 1,
+        "category": "Annet"
+      },
+      {
+        "name": "Pizza saus",
+        "measurement": "stk",
+        "quantity": 1,
+        "category": "Annet"
+      },
+      {
+        "name": "Ost",
+        "measurement": "g",
+        "quantity": 300,
+        "category": "Meieri"
+      },
+      {
+        "name": "Smårettsinke",
+        "measurement": "g",
+        "quantity": 200,
+        "category": "Kjøtt og fisk"
+      },
+      {
+        "name": "Kjøtt pølse",
+        "measurement": "g",
+        "quantity": 100,
+        "category": "Kjøtt og fisk"
+      }
+    ],
+    "image": "hjemmelagetpizzaImage.jpg"
+  },
+  {
+    "id": 6,
+    "name": "Pasta Salat",
+    "description": "",
+    "servings": 2,
+    "ingredients": [
+      {
+        "name": "Kylling",
+        "measurement": "g",
+        "quantity": 200,
+        "category": "Kjøtt og fisk"
+      },
+      {
+        "name": "Pasta",
+        "measurement": "g",
+        "quantity": 200,
+        "category": "Bakevarer"
+      },
+      {
+        "name": "Pesto",
+        "measurement": "stk",
+        "quantity": 1,
+        "category": "Annet"
+      },
+      {
+        "name": "Salat hode",
+        "measurement": "stk",
+        "quantity": 1,
+        "category": "Frukt og grønt"
+      },
+      {
+        "name": "Ost",
+        "measurement": "g",
+        "quantity": 100,
+        "category": "Meieri"
+      }
+    ],
+    "image": "pestosalatImage.jpg"
+  },
+  {
+    "id": 7,
+    "name": "Hamburger",
+    "description": "",
+    "servings": 2,
+    "ingredients": [
+      {
+        "name": "Hamburgere",
+        "measurement": "stk",
+        "quantity": 4,
+        "category": "Kjøtt og fisk"
+      },
+      {
+        "name": "Cheddar Ost",
+        "measurement": "stk",
+        "quantity": 4,
+        "category": "Meieri"
+      },
+      {
+        "name": "Hamburger brød",
+        "measurement": "stk",
+        "quantity": 4,
+        "category": "Bakevarer"
+      },
+      {
+        "name": "Salat",
+        "measurement": "g",
+        "quantity": 100,
+        "category": "Frukt og grønt"
+      },
+      {
+        "name": "Agurk",
+        "measurement": "g",
+        "quantity": 50,
+        "category": "Frukt og grønt"
+      },
+      {
+        "name": "Burger Dressing",
+        "measurement": "stk",
+        "quantity": 1,
+        "category": "Annet"
+      }
+    ],
+    "image": "hamburgerImage.jpg"
+  }
+]

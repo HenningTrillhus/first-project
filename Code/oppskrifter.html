@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="oppskrifter.css">
+</head>
+<body>
+    <div id="menuBoxTop">
+        <button onclick="location.href='index.html'">
+            Gå til kjøleskapet
+        </button>
+        <button onclick="location.href='handleliste.html'">
+            Gå til handleliste 
+        </button>
+        <button onclick="location.href='savedhandleliste.html'">
+            Gå til handleliste arkiv
+        </button>
+    </div>
+    <div id="recipesContainer" class="cards">
+        
+        <!-- New recipe cards will be inserted here -->
+    </div>
+
+    <!-- Floating plus button -->
+    <button class="fab" aria-label="Add recipe" onclick="openRecipeModal()">+</button>
+
+    <!-- Create Modal overlay -->
+    <div id="recipeModal" class="modal" aria-hidden="true">
+        <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="recipeTitleLabel">
+            <div class="modal-header">
+                <h2 id="recipeTitleLabel">Create Recipe</h2>
+                <button class="close" aria-label="Close" onclick="closeRecipeModal()">×</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="field">
+                    <label for="recipeName" style="font-weight: 600; color: #333; font-size: 14px;">Recipe Name</label>
+                    <input type="text" id="recipeName" placeholder="e.g., Spaghetti Carbonara" />
+                </div>
+
+                <div class="servings-note">
+                    <strong>Default:</strong> This recipe is for 2 servings
+                </div>
+
+                <div class="ingredients-section">
+                    <div class="ingredients-header">
+                        <h3>Ingredients</h3>
+                        <button class="secondary" onclick="addIngredientRow()">+ Add Ingredient</button>
+                    </div>
+                    <div id="ingredientsList" class="ingredients-list">
+                        <!-- Rows inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="secondary" onclick="closeRecipeModal()">Cancel</button>
+                <button class="primary" onclick="saveRecipe()">Save Recipe</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Recipe Modal -->
+    <div id="recipeViewModal" class="modal" aria-hidden="true">
+        <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="viewRecipeTitle">
+            <div class="modal-header">
+                <h2 id="viewRecipeTitle">Recipe</h2>
+                <button class="close" aria-label="Close" onclick="closeRecipeView()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="servings-note">
+                    <strong>📋 Servings:</strong> 2 people
+                </div>
+                <h3 style="margin-top: 20px; margin-bottom: 12px; font-size: 16px; color: #333;">Ingredients:</h3>
+                <p class="ingredient-hint">💡 Red background indicates ingredients that are not in your ingredient list</p>
+                <ul id="viewIngredients" class="ingredients-view-list"></ul>
+            </div>
+            <div class="modal-footer">
+                <button class="secondary" onclick="addMissingToShoppingList()">📝 Add Missing Items</button>
+                <button class="primary" onclick="closeRecipeView()">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function handleCardClick(id) {
+            openRecipeViewById(id);
+        }
+
+        // In-memory recipes list
+        window._recipes = [];
+
+        function setRecipes(list){
+            window._recipes = Array.isArray(list) ? list : [];
+            renderRecipeCards(window._recipes);
+        }
+
+        function renderRecipeCards(list){
+            const container = document.getElementById('recipesContainer');
+            // Preserve the initial Taco card, then remove any dynamically added ones
+            const staticFirst = container.firstElementChild; // Taco card
+            container.innerHTML = '';
+            if (staticFirst) container.appendChild(staticFirst);
+            list.forEach(r => appendRecipeCard(r));
+        }
+
+        function appendRecipeCard(recipe){
+            const container = document.getElementById('recipesContainer');
+            const card = document.createElement('div');
+            
+            // Check if recipe has an image
+            if (recipe.image) {
+                card.className = 'recipe-card-with-image';
+                card.style.backgroundImage = `url('images/${recipe.image}')`;
+            } else {
+                card.className = 'recipe-card';
+                // choose a light color per recipe name for consistency
+                card.style.backgroundColor = lightColorFor(recipe.name || 'Recipe');
+            }
+            
+            const text = document.createElement('div');
+            text.className = recipe.image ? 'recipe-card-image-text' : 'recipe-card-text';
+            text.textContent = recipe.name || 'Recipe';
+            card.appendChild(text);
+            card.addEventListener('click', () => openRecipeViewById(recipe.id));
+            container.appendChild(card);
+        }
+
+        function lightColorFor(str){
+            const s = String(str || '');
+            let hash = 0;
+            for (let i = 0; i < s.length; i++) {
+                hash = ((hash << 5) - hash) + s.charCodeAt(i);
+                hash |= 0;
+            }
+            const hue = Math.abs(hash) % 360;
+            return `hsl(${hue}, 70%, 90%)`;
+        }
+
+        function openRecipeModal() {
+            const m = document.getElementById('recipeModal');
+            resetRecipeForm();
+            m.classList.add('open');
+            m.setAttribute('aria-hidden', 'false');
+        }
+
+        function closeRecipeModal() {
+            const m = document.getElementById('recipeModal');
+            m.classList.remove('open');
+            m.setAttribute('aria-hidden', 'true');
+        }
+
+        function resetRecipeForm() {
+            document.getElementById('recipeName').value = '';
+            const list = document.getElementById('ingredientsList');
+            list.innerHTML = '';
+            // start with one empty row
+            addIngredientRow();
+        }
+
+        function addIngredientRow() {
+            const list = document.getElementById('ingredientsList');
+            const row = document.createElement('div');
+            row.className = 'ingredient-row';
+            row.innerHTML = `
+                <input class="ing-name" type="text" placeholder="Ingredient name" required />
+                <select class="ing-measure">
+                    <option value="stk">Stk</option>
+                    <option value="g">g</option>
+                    <option value="kg">kg</option>
+                    <option value="l">l</option>
+                    <option value="ml">ml</option>
+                </select>
+                <input class="ing-qty" type="number" step="0.01" placeholder="Qty" min="0" />
+                <button class="icon" type="button" title="Remove" aria-label="Remove" onclick="this.parentElement.remove()">✕</button>
+            `;
+            list.appendChild(row);
+            // Focus on the ingredient name input
+            row.querySelector('.ing-name').focus();
+            // Allow Enter key to add new ingredient
+            row.querySelector('.ing-name').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    addIngredientRow();
+                    e.preventDefault();
+                }
+            });
+        }
+
+        async function saveRecipe() {
+            const name = String(document.getElementById('recipeName').value || '').trim();
+            if (!name) {
+                alert('Please enter a recipe name');
+                return;
+            }
+            const rows = Array.from(document.querySelectorAll('#ingredientsList .ingredient-row'));
+            const ingredients = rows.map(r => ({
+                name: String(r.querySelector('.ing-name').value || '').trim(),
+                measurement: String(r.querySelector('.ing-measure').value || 'stk').trim(),
+                quantity: parseFloat(r.querySelector('.ing-qty').value || '0') || 0,
+                category: 'Annet'
+            })).filter(i => i.name);
+
+            if (ingredients.length === 0) {
+                alert('Please add at least one ingredient');
+                return;
+            }
+
+            const payload = { name, ingredients };
+            try {
+                const res = await fetch('/api/recipes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const json = await res.json();
+                if (!json.ok) throw new Error(json.error || 'Failed to save recipe');
+                const saved = json.recipe;
+                if (saved) {
+                    // update in-memory and UI
+                    window._recipes.push(saved);
+                    appendRecipeCard(saved);
+                }
+            } catch (e) {
+                // Fallback to localStorage
+                try {
+                    const key = 'recipesFallback';
+                    const existing = JSON.parse(localStorage.getItem(key) || '[]');
+                    const localRecipe = { id: Date.now(), name, servings: 2, ingredients };
+                    existing.push(localRecipe);
+                    localStorage.setItem(key, JSON.stringify(existing));
+                    window._recipes.push(localRecipe);
+                    appendRecipeCard(localRecipe);
+                } catch (lsErr) {
+                    alert('Could not save recipe: ' + e.message);
+                }
+            }
+            closeRecipeModal();
+        }
+
+        // Store the currently viewed recipe and its missing ingredients
+        let currentViewedRecipe = null;
+        let currentMissingIngredients = [];
+
+        async function openRecipeViewById(id){
+            const r = (window._recipes || []).find(x => x.id === id);
+            if (!r) return;
+            
+            currentViewedRecipe = r;
+            currentMissingIngredients = [];
+            
+            // Fetch the list of available ingredients from the backend
+            let backendIngredients = [];
+            try {
+                const res = await fetch('/api/ingredients');
+                const json = await res.json();
+                if (json && json.ok && Array.isArray(json.ingredients)) {
+                    backendIngredients = json.ingredients.map(i => i.name.toLowerCase());
+                }
+            } catch (e) {
+                console.warn('Could not fetch ingredients from backend', e);
+            }
+            
+            document.getElementById('viewRecipeTitle').textContent = r.name || 'Recipe';
+            const list = document.getElementById('viewIngredients');
+            list.innerHTML = '';
+            (r.ingredients || []).forEach(i => {
+                const li = document.createElement('li');
+                const qty = (typeof i.quantity === 'number' && !Number.isNaN(i.quantity)) ? i.quantity : '';
+                const meas = i.measurement ? ` ${i.measurement}` : '';
+                li.textContent = `${qty}${meas} ${i.name}`.trim();
+                
+                // Check if this ingredient exists in the backend list
+                const ingredientNameLower = (i.name || '').toLowerCase();
+                if (!backendIngredients.includes(ingredientNameLower)) {
+                    li.classList.add('missing');
+                    currentMissingIngredients.push(i);
+                }
+                
+                list.appendChild(li);
+            });
+            openRecipeView();
+        }
+
+        function openRecipeView(){
+            const m = document.getElementById('recipeViewModal');
+            m.classList.add('open');
+            m.setAttribute('aria-hidden', 'false');
+        }
+        function closeRecipeView(){
+            const m = document.getElementById('recipeViewModal');
+            m.classList.remove('open');
+            m.setAttribute('aria-hidden', 'true');
+        }
+
+        async function addMissingToShoppingList() {
+            if (!currentMissingIngredients || currentMissingIngredients.length === 0) {
+                alert('All ingredients are already in your ingredient list!');
+                return;
+            }
+
+            let addedCount = 0;
+            let failedCount = 0;
+
+            for (const ingredient of currentMissingIngredients) {
+                try {
+                    const response = await fetch('/api/grocerieList', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: ingredient.name,
+                            quantity: ingredient.quantity || 1,
+                            massurment: ingredient.measurement || 'stk',
+                            category: ingredient.category || 'Annet',
+                            completed: false,
+                            importance: false
+                        })
+                    });
+                    
+                    const json = await response.json();
+                    if (json.ok) {
+                        addedCount++;
+                    } else {
+                        failedCount++;
+                    }
+                } catch (e) {
+                    console.error('Failed to add ingredient:', ingredient.name, e);
+                    failedCount++;
+                }
+            }
+
+            if (addedCount > 0) {
+                alert(`Added ${addedCount} missing ingredient${addedCount > 1 ? 's' : ''} to shopping list!`);
+            }
+            if (failedCount > 0) {
+                alert(`Failed to add ${failedCount} ingredient${failedCount > 1 ? 's' : ''}.`);
+            }
+        }
+
+        async function loadRecipes(){
+            try {
+                const res = await fetch('/api/recipes');
+                const json = await res.json();
+                if (json && json.ok && Array.isArray(json.recipes)) {
+                    setRecipes(json.recipes);
+                    return;
+                }
+                throw new Error('Bad response');
+            } catch (e) {
+                try {
+                    const fallback = JSON.parse(localStorage.getItem('recipesFallback') || '[]');
+                    setRecipes(fallback);
+                } catch {
+                    setRecipes([]);
+                }
+            }
+        }
+
+        // initial load
+        document.addEventListener('DOMContentLoaded', () => {
+            resetRecipeForm();
+            loadRecipes();
+        });
+    </script>
+</body>
+</html>

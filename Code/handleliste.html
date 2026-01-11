@@ -547,7 +547,8 @@
                             body: JSON.stringify({ 
                                 name: item.name, 
                                 quantity: item.quantity, 
-                                massurment: item.massurment 
+                                massurment: item.massurment,
+                                category: item.category || 'Annet'
                             })
                         });
                     });
